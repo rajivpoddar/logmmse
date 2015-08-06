@@ -19,7 +19,7 @@ def logmmse(x, Srate, noise_frames=6):
 
     PERC = 50
     len1 = math.floor(Slen * PERC / 100)
-    len2 = Slen - len1
+    len2 = int(Slen - len1)
 
     win = np.hanning(Slen)
     win = win * len2 / np.sum(win)
@@ -34,21 +34,21 @@ def logmmse(x, Srate, noise_frames=6):
     Nframes = int(math.floor(len(x) / len2) - math.floor(Slen / len2))
     xfinal = np.zeros(Nframes * len2)
 
-    k = 0
     aa = 0.98
     mu = 0.98
     eta = 0.15
     ksi_min = 10 ** (-25 / 10)
 
-    for n in range(Nframes):
+    for k in range(0, Nframes*len2, len2):
         insign = win * x[k:k + Slen]
 
         spec = np.fft.fft(insign, nFFT, axis=0)
-        sig2 = np.absolute(spec) ** 2
+        sig = np.absolute(spec)
+        sig2 = sig ** 2
 
         gammak = np.minimum(sig2 / noise_mu2, 40)
 
-        if n == 0:
+        if k == 0:
             ksi = aa + (1 - aa) * np.maximum(gammak - 1, 0)
         else:
             ksi = aa * Xk_prev / noise_mu2 + (1 - aa) * np.maximum(gammak - 1, 0)
@@ -71,7 +71,6 @@ def logmmse(x, Srate, noise_frames=6):
 
         xfinal[k:k + len2] = x_old + xi_w[0:len1]
         x_old = xi_w[len1:Slen]
-        k = k + len2
 
     return xfinal
 
@@ -80,7 +79,7 @@ def logmmse(x, Srate, noise_frames=6):
 fs, signal = wavfile.read(sys.argv[1])
 signal = np.array(signal/32767, dtype=np.float)
 
-output = logmmse(signal, fs)
+output = logmmse(signal, fs, 2)
 
 output = np.array(output*32767, dtype=np.int16)
 wavfile.write(sys.argv[2], fs, output)
