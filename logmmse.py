@@ -13,6 +13,7 @@ import sys
 
 def logmmse(x, Srate, noise_frames=6):
     Slen = int(math.floor(20 * Srate / 1000))
+    #Slen = 1024
 
     if Slen % 2 == 1:
         Slen = Slen + 1
@@ -79,7 +80,7 @@ def logmmse(x, Srate, noise_frames=6):
 fs, signal = wavfile.read(sys.argv[1])
 signal = np.array(signal/32767, dtype=np.float)
 
-output = logmmse(signal, fs, 2)
+output = logmmse(signal, fs)
 
 output = np.array(output*32767, dtype=np.int16)
 wavfile.write(sys.argv[2], fs, output)
