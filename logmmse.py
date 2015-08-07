@@ -8,7 +8,9 @@ from scikits.audiolab import Sndfile, Format
 import argparse
 import sys
 
-def logmmse(x, Srate, noise_frames=6, Slen=0, eta=0.15):
+np.seterr('raise')
+
+def logmmse(x, Srate, noise_frames=6, Slen=0, eta=0.15, saved_params=None):
     if Slen == 0:
         Slen = int(math.floor(0.02 * Srate))
 
@@ -23,14 +25,20 @@ def logmmse(x, Srate, noise_frames=6, Slen=0, eta=0.15):
     win = win * len2 / np.sum(win)
     nFFT = 2 * Slen
 
-    noise_mean = np.zeros(nFFT)
-    for j in range(0, Slen*noise_frames, Slen):
-        noise_mean = noise_mean + np.absolute(np.fft.fft(win * x[j:j + Slen], nFFT, axis=0))
-    noise_mu2 = noise_mean / noise_frames ** 2
-
     x_old = np.zeros(len1)
+    Xk_prev = np.zeros(len1)
     Nframes = int(math.floor(len(x) / len2) - math.floor(Slen / len2))
     xfinal = np.zeros(Nframes * len2)
+
+    if saved_params == None:
+        noise_mean = np.zeros(nFFT)
+        for j in range(0, Slen*noise_frames, Slen):
+            noise_mean = noise_mean + np.absolute(np.fft.fft(win * x[j:j + Slen], nFFT, axis=0))
+        noise_mu2 = noise_mean / noise_frames ** 2
+    else:
+        noise_mu2 = saved_params['noise_mu2']
+        Xk_prev = saved_params['Xk_prev']
+        x_old = saved_params['x_old']
 
     aa = 0.98
     mu = 0.98
@@ -46,7 +54,7 @@ def logmmse(x, Srate, noise_frames=6, Slen=0, eta=0.15):
 
         gammak = np.minimum(sig2 / noise_mu2, 40)
 
-        if k == 0:
+        if Xk_prev.all() == 0:
             ksi = aa + (1 - aa) * np.maximum(gammak - 1, 0)
         else:
             ksi = aa * Xk_prev / noise_mu2 + (1 - aa) * np.maximum(gammak - 1, 0)
@@ -70,11 +78,11 @@ def logmmse(x, Srate, noise_frames=6, Slen=0, eta=0.15):
         xfinal[k:k + len2] = x_old + xi_w[0:len1]
         x_old = xi_w[len1:Slen]
 
-    return xfinal
+    return xfinal, {'noise_mu2': noise_mu2, 'Xk_prev': Xk_prev, 'x_old': x_old}
 
 #main
 
-parser = argparse.ArgumentParser(description='Speech enhancement/noise reduction using Log MMSE STSA algorithm')
+parser = argparse.ArgumentParser(description='Speech enhancement/noise reduction using Log MMSE algorithm')
 parser.add_argument('input_file', action='store', type=str, help='input file to clean')
 parser.add_argument('output_file', action='store', type=str, help='output file to write (default: stdout)', default=sys.stdout)
 parser.add_argument('-i, --initial-noise', action='store', type=int, dest='initial_noise', help='initial noise in frames (default: 6)', default=6)
@@ -90,6 +98,7 @@ num_frames = input_file.nframes
 output_file = Sndfile(args.output_file, 'w', Format(type=input_file.file_format, encoding='pcm16', endianness=input_file.endianness), input_file.channels, fs)
 
 chunk_size = int(np.floor(60*fs))
+saved_params = None
 
 frames_read = 0
 while (frames_read < num_frames):
@@ -97,7 +106,7 @@ while (frames_read < num_frames):
     signal = input_file.read_frames(frames)
     frames_read = frames_read + frames
 
-    output = logmmse(signal, fs, args.initial_noise, args.window_size, args.noise_threshold)
+    output, saved_params = logmmse(signal, fs, args.initial_noise, args.window_size, args.noise_threshold, saved_params)
 
     output = np.array(output*np.iinfo(np.int16).max, dtype=np.int16)
     output_file.write_frames(output)
