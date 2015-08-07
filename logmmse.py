@@ -4,16 +4,13 @@ from __future__ import division
 import numpy as np
 import math
 from scipy.special import *
-from numpy.matlib import repmat
-from scipy.signal import lfilter
-from scipy.io import wavfile
 from scikits.audiolab import Sndfile, Format
 import argparse
 import sys
 
-def logmmse(x, Srate, noise_frames=6):
-    Slen = int(math.floor(20 * Srate / 1000))
-    #Slen = 1024
+def logmmse(x, Srate, noise_frames=6, Slen=0, eta=0.15):
+    if Slen == 0:
+        Slen = int(math.floor(0.02 * Srate))
 
     if Slen % 2 == 1:
         Slen = Slen + 1
@@ -77,10 +74,33 @@ def logmmse(x, Srate, noise_frames=6):
 
 #main
 
-fs, signal = wavfile.read(sys.argv[1])
-signal = np.array(signal/32767, dtype=np.float)
+parser = argparse.ArgumentParser(description='Speech enhancement/noise reduction using Log MMSE STSA algorithm')
+parser.add_argument('input_file', action='store', type=str, help='input file to clean')
+parser.add_argument('output_file', action='store', type=str, help='output file to write (default: stdout)', default=sys.stdout)
+parser.add_argument('-i, --initial-noise', action='store', type=int, dest='initial_noise', help='initial noise in frames (default: 6)', default=6)
+parser.add_argument('-w, --window-size', action='store', type=int, dest='window_size', help='hanning window size (default: 0.02*sample rate)', default=0)
+parser.add_argument('-n, --noise-threshold', action='store', type=float, dest='noise_threshold', help='noise thresold (default: 0.15)', default=0.15)
+args = parser.parse_args()
 
-output = logmmse(signal, fs)
+input_file = Sndfile(args.input_file, 'r')
 
-output = np.array(output*32767, dtype=np.int16)
-wavfile.write(sys.argv[2], fs, output)
+fs = input_file.samplerate
+num_frames = input_file.nframes
+
+output_file = Sndfile(args.output_file, 'w', Format(type=input_file.file_format, encoding='pcm16', endianness=input_file.endianness), input_file.channels, fs)
+
+chunk_size = int(np.floor(60*fs))
+
+frames_read = 0
+while (frames_read < num_frames):
+    frames = num_frames - frames_read if frames_read + chunk_size > num_frames else chunk_size
+    signal = input_file.read_frames(frames)
+    frames_read = frames_read + frames
+
+    output = logmmse(signal, fs, args.initial_noise, args.window_size, args.noise_threshold)
+
+    output = np.array(output*np.iinfo(np.int16).max, dtype=np.int16)
+    output_file.write_frames(output)
+
+input_file.close()
+output_file.close()
