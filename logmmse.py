@@ -18,7 +18,7 @@ def logmmse(x, Srate, noise_frames=6, Slen=0, eta=0.15, saved_params=None):
         Slen = Slen + 1
 
     PERC = 50
-    len1 = math.floor(Slen * PERC / 100)
+    len1 = int(math.floor(Slen * PERC / 100))
     len2 = int(Slen - len1)
 
     win = np.hanning(Slen)
@@ -81,35 +81,27 @@ def logmmse(x, Srate, noise_frames=6, Slen=0, eta=0.15, saved_params=None):
     return xfinal, {'noise_mu2': noise_mu2, 'Xk_prev': Xk_prev, 'x_old': x_old}
 
 #main
+def run_logmmse(input_filename, output_filename, initial_noise=6, window_size=0, noise_threshold=0.15):
+    input_file = Sndfile(input_filename, 'r')
 
-parser = argparse.ArgumentParser(description='Speech enhancement/noise reduction using Log MMSE algorithm')
-parser.add_argument('input_file', action='store', type=str, help='input file to clean')
-parser.add_argument('output_file', action='store', type=str, help='output file to write (default: stdout)', default=sys.stdout)
-parser.add_argument('-i, --initial-noise', action='store', type=int, dest='initial_noise', help='initial noise in frames (default: 6)', default=6)
-parser.add_argument('-w, --window-size', action='store', type=int, dest='window_size', help='hanning window size (default: 0.02*sample rate)', default=0)
-parser.add_argument('-n, --noise-threshold', action='store', type=float, dest='noise_threshold', help='noise thresold (default: 0.15)', default=0.15)
-args = parser.parse_args()
+    fs = input_file.samplerate
+    num_frames = input_file.nframes
 
-input_file = Sndfile(args.input_file, 'r')
+    output_file = Sndfile(output_filename, 'w', Format(type=input_file.file_format, encoding='pcm16', endianness=input_file.endianness), input_file.channels, fs)
 
-fs = input_file.samplerate
-num_frames = input_file.nframes
+    chunk_size = int(np.floor(60*fs))
+    saved_params = None
 
-output_file = Sndfile(args.output_file, 'w', Format(type=input_file.file_format, encoding='pcm16', endianness=input_file.endianness), input_file.channels, fs)
+    frames_read = 0
+    while (frames_read < num_frames):
+        frames = num_frames - frames_read if frames_read + chunk_size > num_frames else chunk_size
+        signal = input_file.read_frames(frames)
+        frames_read = frames_read + frames
 
-chunk_size = int(np.floor(60*fs))
-saved_params = None
+        output, saved_params = logmmse(signal, fs, initial_noise, window_size, noise_threshold, saved_params)
 
-frames_read = 0
-while (frames_read < num_frames):
-    frames = num_frames - frames_read if frames_read + chunk_size > num_frames else chunk_size
-    signal = input_file.read_frames(frames)
-    frames_read = frames_read + frames
+        output = np.array(output*np.iinfo(np.int16).max, dtype=np.int16)
+        output_file.write_frames(output)
 
-    output, saved_params = logmmse(signal, fs, args.initial_noise, args.window_size, args.noise_threshold, saved_params)
-
-    output = np.array(output*np.iinfo(np.int16).max, dtype=np.int16)
-    output_file.write_frames(output)
-
-input_file.close()
-output_file.close()
+    input_file.close()
+    output_file.close()
