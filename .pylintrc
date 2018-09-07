@@ -1,0 +1,11 @@
+[SIMILARITIES]
+
+ignore-comments=yes
+ignore-docstrings=yes
+
+[FORMAT]
+
+indent-string='    '
+
+[MESSAGES CONTROL]
+disable=C0103, C0111, C0301, R0913, R0914, R0915, R1705
