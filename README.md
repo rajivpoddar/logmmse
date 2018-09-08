@@ -1,7 +1,7 @@
 The fork improved on the original version to support Python 3, fix a few bugs, and make it importable from other Python scripts
 
 ## logmmse ##
-A python implementation of the LogMMSE speech enhancement/noise reduction alogrithm. This file has been ported from logmmse.m file found at the following link.
+A python implementation of the LogMMSE speech enhancement/noise reduction alogrithm
 
 ## API Reference ##
 
@@ -29,4 +29,7 @@ FloatingPointError: invalid value encountered in multiply
 
 ### Reference ###
 
+### Reference ###
+
+This file has been ported from logmmse.m file found at the following link.
 https://raw.githubusercontent.com/braindead/Noise-reduction/master/logmmse.m
