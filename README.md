@@ -9,7 +9,7 @@ A python implementation of the LogMMSE speech enhancement/noise reduction alogri
 
 **data (Mandatory)**
 
-A 1d or 2d Numpy array representing the audio signal
+A 1d or 2d (number of frames, channels) Numpy array representing the audio signal
 
 Supported format: 32-bit floating-point, 32-bit PCM, 16-bit PCM, and 8-bit PCM, see https://docs.scipy.org/doc/scipy/reference/generated/scipy.io.wavfile.read.html     
 
@@ -25,7 +25,7 @@ the output format would be the same as input
 
 **return**
 
-A 1d or 2d Numpy array representing the enhanced signal
+A 1d or 2d (number of frames, channels) Numpy array representing the enhanced signal
 
 ### logmmse_from_file(data, output_filename, initial_noise=6, window_size=0, noise_threshold=0.15) ###
 
@@ -41,7 +41,7 @@ See above
 
 **return**
 
-A 1d or 2d Numpy array representing the enhanced signal
+A 1d or 2d (number of frames, channels) Numpy array representing the enhanced signal
 
 ### Contribute ###
 
