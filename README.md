@@ -41,7 +41,7 @@ the output format would be the same as input
 
 A 1d or 2d (number of frames, channels) Numpy array representing the enhanced signal
 
-### logmmse_from_file(data, output_filename, initial_noise=6, window_size=0, noise_threshold=0.15) ###
+### logmmse_from_file(data, output_filename=None, initial_noise=6, window_size=0, noise_threshold=0.15) ###
 
 **input_filename (Mandatory)**
 
@@ -57,11 +57,11 @@ See above
 
 A 1d or 2d (number of frames, channels) Numpy array representing the enhanced signal
 
-### Contribute ###
+## Contribute ##
 
 After opening an issue or pull request, please also send me an email for notification
 
-### Reference ###
+## Reference ##
 
 This file has been ported from logmmse.m file found at the following link.
 https://raw.githubusercontent.com/braindead/Noise-reduction/master/logmmse.m
