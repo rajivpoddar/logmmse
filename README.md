@@ -3,6 +3,20 @@ The fork improved on the original version to support Python 3, fix a few bugs, a
 ## logmmse ##
 A python implementation of the LogMMSE speech enhancement/noise reduction alogrithm
 
+## Installation ##
+
+```
+pip install logmmse
+```
+
+## Basic Example ##
+
+```python
+from logmmse import logmmse_from_file
+out = logmmse_from_file('sample.wav')
+print(out)
+```
+
 ## API Reference ##
 
 ### logmmse(data, sampling_rate, output_file=None, initial_noise=6, window_size=0, noise_threshold=0.15) ###
