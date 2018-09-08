@@ -5,7 +5,7 @@ A python implementation of the LogMMSE speech enhancement/noise reduction alogri
 
 ## API Reference ##
 
-### run_logmmse(input_filename, output_filename, initial_noise=6, window_size=0, noise_threshold=0.15, l_trim=False) ###
+### run_logmmse(input_filename, output_filename, initial_noise=6, window_size=0, noise_threshold=0.15) ###
 
 **input_filename (Mandatory)**
 
@@ -19,15 +19,9 @@ filename of the wave output
 
 the format would be the same as input     
 
-**l_trim**
+### Contribute ###
 
-Whether to remove zeros at the beginning of an array, set this option to true if you encounter the following error:
-```
-sig = sig * hw
-FloatingPointError: invalid value encountered in multiply
-```
-
-### Reference ###
+After opening an issue or pull request, please also send me an email for notification
 
 ### Reference ###
 
