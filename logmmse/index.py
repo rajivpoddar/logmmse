@@ -22,11 +22,14 @@ def mono_logmmse(m_input, fs, dtype, initial_noise=6, window_size=0, noise_thres
 
 def run_logmmse(input_filename, output_filename, initial_noise=6, window_size=0, noise_threshold=0.15):
     fs, input_file = read(input_filename, 'r')
-    output = np.array([], dtype=input_file.dtype)
+
     input_file, dtype = to_float(input_file)
+    input_file += np.finfo(np.float64).eps
     if input_file.ndim == 1:
         output = mono_logmmse(input_file, fs, dtype, initial_noise, window_size, noise_threshold)
     else:
+        output = []
         for _, m_input in enumerate(input_file.T):
-            output = np.concatenate((output, mono_logmmse(m_input, fs, dtype, initial_noise, window_size, noise_threshold)))
+            output.append(mono_logmmse(m_input, fs, dtype, initial_noise, window_size, noise_threshold))
+    output = np.array(output)
     write(output_filename, fs, output.T)
