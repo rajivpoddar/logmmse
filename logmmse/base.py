@@ -1,8 +1,8 @@
 from __future__ import division
 import numpy as np
 from scipy.io.wavfile import read, write
-from logmmse import logmmse as _logmmse
-from utils import to_float, from_float
+from .logmmse import logmmse as _logmmse
+from .utils import to_float, from_float
 
 np.seterr('raise')
 
@@ -42,4 +42,3 @@ def logmmse_from_file(input_file, output_file=None, initial_noise=6,
     sampling_rate, data = read(input_file, 'r')
     return logmmse(data, sampling_rate, output_file, initial_noise,
                    window_size, noise_threshold)
-logmmse_from_file('../test/sample.wav', 'sample2.wav')
