@@ -1,4 +1,4 @@
-The fork improved on the original version to support Python 3, fix a few bugs, and make it importable from other Python scripts
+The fork improved on the original version to support Python 3, fixed a few bugs, and made it importable from other Python scripts
 
 ## logmmse ##
 A python implementation of the LogMMSE speech enhancement/noise reduction alogrithm
