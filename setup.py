@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='logmmse',
-    version='1.3',
+    version='1.4',
     description='A python implementation of the LogMMSE speech enhancement/noise reduction alogrithm',
     long_description=long_description,
     long_description_content_type="text/markdown",
