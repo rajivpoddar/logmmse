@@ -27,7 +27,7 @@ def logmmse(x, Srate, noise_frames=6, Slen=0, eta=0.15, saved_params=None):
         noise_mean = np.zeros(nFFT)
         for j in range(0, Slen*noise_frames, Slen):
             noise_mean = noise_mean + np.absolute(np.fft.fft(win * x[j:j + Slen], nFFT, axis=0))
-        noise_mu2 = noise_mean / noise_frames ** 2
+        noise_mu2 = (noise_mean / noise_frames) ** 2
     else:
         noise_mu2 = saved_params['noise_mu2']
         Xk_prev = saved_params['Xk_prev']
